@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Coca-Cola Classic | Real Magic in Every Drop</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Playfair+Display:ital,wght@0,700;0,900;1,700&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#F40009", // Classic Coca-Cola Red
+            "background-light": "#FFFDF9",
+            "background-dark": "#121212",
+            coke: {
+              red: "#F40009",
+              darkRed: "#A80006",
+              amber: "#F4B800",
+              warmYellow: "#FBBF24",
+              bottleYellow: "#FED700"
+            }
+          },
+          fontFamily: {
+            sans: ["'Plus Jakarta Sans'", "sans-serif"],
+            display: ["'Playfair Display'", "serif"],
+          },
+          borderRadius: {
+            DEFAULT: "1rem",
+            '2xl': '1.25rem',
+            '3xl': '1.75rem',
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="has-bg-animation text-stone-800 dark:text-stone-100 font-sans antialiased">
+
+  <!-- Preloader Screen -->
+  <div id="preloader" class="preloader">
+    <div class="preloader-backdrop"></div>
+    <div class="preloader-content">
+      <div class="brand-badge">SINCE 1886</div>
+      <div class="coke-bottle-loader">
+        <div class="loader-bubble b1"></div>
+        <div class="loader-bubble b2"></div>
+        <div class="loader-bubble b3"></div>
+        <div class="loader-cap"></div>
+        <div class="loader-liquid"></div>
+      </div>
+      <h2 class="preloader-title">CHILLING THE BOTTLE</h2>
+      <p class="preloader-subtitle">Loading 240 frames for full-page live scroll animation...</p>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      <div class="progress-stats">
+        <span id="progress-percent" class="progress-percent">0%</span>
+        <span id="progress-frames" class="progress-frames">0 / 240</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIXED FULL-PAGE BACKGROUND ANIMATION CANVAS -->
+  <div class="fixed-canvas-container" aria-hidden="true">
+    <canvas id="coke-canvas"></canvas>
+    <div class="canvas-ambient-glow"></div>
+  </div>
+
+  <!-- Floating Frame HUD Badge & Scroll Indicator -->
+  <div class="fixed bottom-6 left-6 z-50 glass-effect bg-white/80 dark:bg-stone-900/80 border border-white/70 dark:border-stone-700/70 px-4 py-2 rounded-full shadow-xl text-xs font-bold text-stone-800 dark:text-stone-200 flex items-center gap-2.5 backdrop-blur-md">
+    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+    <span id="frame-counter">FRAME 001 / 240</span>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 glass-effect bg-white/75 dark:bg-stone-900/75 border-b border-stone-200/50 dark:border-stone-800/50 backdrop-blur-xl transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a class="flex items-center gap-3 group" href="#">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md shadow-primary/30 group-hover:scale-105 transition-transform">
+          <span class="material-symbols-outlined text-2xl font-bold">water_drop</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-2xl font-display font-extrabold tracking-tight text-primary leading-none">Coca-Cola</span>
+          <span class="text-[10px] font-bold tracking-[0.25em] text-stone-600 dark:text-stone-400 uppercase">Original Taste</span>
+        </div>
+      </a>
+      <nav class="hidden md:flex items-center gap-8">
+        <a class="text-sm font-semibold text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary transition-colors" href="#sensory">Sensory Profile</a>
+        <a class="text-sm font-semibold text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary transition-colors" href="#ritual">Cold Serve Ritual</a>
+        <a class="text-sm font-semibold text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary transition-colors" href="#heritage">Heritage</a>
+        <a class="text-sm font-semibold text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary transition-colors" href="#family">The Family</a>
+        <a class="text-sm font-semibold text-stone-800 dark:text-stone-200 hover:text-primary dark:hover:text-primary transition-colors" href="#pairings">Food Pairings</a>
+      </nav>
+      <div class="flex items-center gap-3 sm:gap-4">
+        <!-- Sound Toggle Button -->
+        <button id="sound-btn" aria-label="Toggle Sound" title="Toggle Fizzy Sound Effects" class="p-2.5 rounded-full border border-stone-300 dark:border-stone-700 bg-white/60 dark:bg-stone-800/60 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 transition-colors flex items-center justify-center shadow-sm backdrop-blur-sm">
+          <span class="material-symbols-outlined text-[20px]" id="sound-icon">volume_off</span>
+        </button>
+        <!-- Dark Mode Toggle -->
+        <button aria-label="Toggle Theme" class="p-2.5 rounded-full border border-stone-300 dark:border-stone-700 bg-white/60 dark:bg-stone-800/60 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 transition-colors shadow-sm backdrop-blur-sm" id="theme-toggle" onclick="document.documentElement.classList.toggle('dark')">
+          <span class="material-symbols-outlined block dark:hidden text-[20px]">dark_mode</span>
+          <span class="material-symbols-outlined hidden dark:block text-[20px]">light_mode</span>
+        </button>
+        <a class="inline-flex items-center gap-2 bg-primary hover:bg-coke-darkRed text-white px-5 py-2.5 rounded-full font-semibold text-sm shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/35 transition-all" href="#store-locator">
+          <span class="material-symbols-outlined text-[18px]">near_me</span>
+          <span>Find Near You</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section: Adjusted so the Live Canvas Bottle on the right/center is 100% visible! -->
+  <section class="relative overflow-hidden pt-8 pb-24 lg:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        
+        <!-- Left Column: Hero Content with Frosted Glass Badge Card -->
+        <div class="lg:col-span-6 space-y-8 z-20">
+          <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/80 dark:bg-stone-900/80 border border-white/60 dark:border-stone-700/60 text-amber-900 dark:text-amber-200 text-xs font-bold uppercase tracking-wider shadow-md backdrop-blur-md">
+            <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+            Original Glass Contour Since 1915
+          </div>
+          <div class="space-y-4">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08] text-stone-900 dark:text-white drop-shadow-sm">
+              Real Magic in <br/>
+              <span class="font-display italic text-primary">Every Drop.</span> <br/>
+              Since 1886.
+            </h1>
+            <p class="text-lg sm:text-xl text-stone-700 dark:text-stone-300 max-w-xl font-normal leading-relaxed bg-white/40 dark:bg-stone-900/40 p-4 rounded-2xl backdrop-blur-md border border-white/40 dark:border-stone-800/40">
+              Experience the timeless effervescence, crisp uplifting bite, and unmistakable recipe that has refreshed generations across the globe.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3 pt-2">
+            <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/80 dark:bg-stone-800/80 border border-white/60 dark:border-stone-700 shadow-md text-xs font-semibold text-stone-800 dark:text-stone-200 backdrop-blur-md">
+              <span class="material-symbols-outlined text-primary text-base">liquor</span>
+              8 FL. OZ. (237mL) Contour Glass
+            </div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/80 dark:bg-stone-800/80 border border-white/60 dark:border-stone-700 shadow-md text-xs font-semibold text-stone-800 dark:text-stone-200 backdrop-blur-md">
+              <span class="material-symbols-outlined text-sky-500 text-base">ac_unit</span>
+              Best Served at 37°F / 3°C
+            </div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/80 dark:bg-stone-800/80 border border-white/60 dark:border-stone-700 shadow-md text-xs font-semibold text-stone-800 dark:text-stone-200 backdrop-blur-md">
+              <span class="material-symbols-outlined text-emerald-500 text-base">eco</span>
+              100% Natural Flavors
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
+            <a class="inline-flex justify-center items-center gap-3 bg-primary hover:bg-coke-darkRed text-white px-8 py-4 rounded-full font-bold text-base shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/45 hover:-translate-y-0.5 transition-all" href="#store-locator">
+              <span class="material-symbols-outlined text-xl">location_on</span>
+              <span>Find Near You</span>
+            </a>
+            <a class="inline-flex justify-center items-center gap-2 px-7 py-4 rounded-full font-semibold text-base border border-white/70 dark:border-stone-700 bg-white/70 dark:bg-stone-800/70 hover:bg-white/90 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 transition-all backdrop-blur-md shadow-md" href="#sensory">
+              <span class="material-symbols-outlined text-xl">science</span>
+              <span>Explore Sensory Profile</span>
+            </a>
+          </div>
+          <div class="pt-6 border-t border-stone-300/60 dark:border-stone-800 flex items-center gap-4">
+            <div class="flex -space-x-2 overflow-hidden">
+              <div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-stone-900 bg-amber-400 text-stone-900 flex items-center justify-center font-bold text-xs">99+</div>
+              <div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-stone-900 bg-primary text-white flex items-center justify-center font-bold text-xs">★</div>
+              <div class="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-stone-900 bg-stone-800 text-white flex items-center justify-center font-bold text-xs">C</div>
+            </div>
+            <p class="text-xs text-stone-700 dark:text-stone-300 font-medium bg-white/40 dark:bg-stone-900/40 px-3 py-1.5 rounded-full backdrop-blur-sm">
+              Over <strong class="text-stone-900 dark:text-stone-100">1.9 Billion</strong> servings enjoyed daily across 200+ nations.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Column: Open Interactive Viewport Highlighting the Live Bottle Animation! -->
+        <div class="lg:col-span-6 relative flex justify-center items-center min-h-[460px] lg:min-h-[560px]">
+          <!-- Ambient lighting rings around bottle -->
+          <div class="absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-amber-300/30 dark:bg-amber-600/15 blur-3xl -z-10 pointer-events-none"></div>
+          
+          <!-- Floating Interactive Callout 1 (Top Left) -->
+          <div class="absolute top-6 left-2 sm:left-4 z-20 glass-effect bg-white/80 dark:bg-stone-900/80 border border-white/70 dark:border-stone-700/70 p-3.5 rounded-2xl shadow-xl animate-float backdrop-blur-md">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-950 flex items-center justify-center text-sky-600 dark:text-sky-300">
+                <span class="material-symbols-outlined text-lg">water_drop</span>
+              </span>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Condensation</p>
+                <p class="text-xs font-extrabold text-stone-900 dark:text-stone-100">Ice-Beaded Chill</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating Interactive Callout 2 (Bottom Right) -->
+          <div class="absolute bottom-16 right-2 sm:right-4 z-20 glass-effect bg-white/80 dark:bg-stone-900/80 border border-white/70 dark:border-stone-700/70 p-3.5 rounded-2xl shadow-xl backdrop-blur-md">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-600 dark:text-amber-300">
+                <span class="material-symbols-outlined text-lg">bubble_chart</span>
+              </span>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Carbonation</p>
+                <p class="text-xs font-extrabold text-stone-900 dark:text-stone-100">Signature Micro-Fizz</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Bottle Focal Guide Badge -->
+          <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 glass-effect bg-stone-950/75 border border-white/30 text-white px-5 py-2.5 rounded-full flex items-center gap-3 text-xs shadow-2xl backdrop-blur-md">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="font-bold tracking-wide">Scroll down to see the bottle pop &amp; burst</span>
+            <span class="material-symbols-outlined text-base animate-bounce">arrow_downward</span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Sensory Profile -->
+  <section class="py-20 lg:py-28 transition-colors" id="sensory">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto space-y-4 mb-16">
+        <span class="inline-block text-xs font-extrabold tracking-widest uppercase text-primary px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-red-950/50 border border-white/70 dark:border-red-900/50 shadow-sm backdrop-blur-md">
+          The Anatomy of Refreshment
+        </span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-stone-900 dark:text-white drop-shadow-sm">
+          A Symphony of Precision &amp; Carbonation
+        </h2>
+        <p class="text-base sm:text-lg text-stone-700 dark:text-stone-300 font-medium">
+          Engineered for an immediate sensory lift. Every contour and ingredient is balanced to deliver the iconic first-sip snap.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div class="glass-card group p-8 rounded-3xl hover:border-primary/50 transition-all hover:-translate-y-1.5 hover:shadow-2xl">
+          <div class="w-14 h-14 rounded-2xl bg-primary/15 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors shadow-md">
+            <span class="material-symbols-outlined text-3xl">bubble_chart</span>
+          </div>
+          <h3 class="text-xl font-bold text-stone-900 dark:text-white mb-3">Carbonation Spark</h3>
+          <p class="text-stone-700 dark:text-stone-300 text-sm leading-relaxed mb-6 font-medium">
+            Micro-effervescence engineered for an instant crisp palate awakening. Hundreds of rising pearls that elevate aroma to the nose.
+          </p>
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold text-stone-600 dark:text-stone-400">
+              <span>Effervescence Intensity</span>
+              <span class="text-primary font-bold">10 / 10</span>
+            </div>
+            <div class="w-full h-2 bg-stone-300/60 dark:bg-stone-700 rounded-full overflow-hidden">
+              <div class="h-full bg-primary rounded-full w-full"></div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card group p-8 rounded-3xl hover:border-amber-500/50 transition-all hover:-translate-y-1.5 hover:shadow-2xl">
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center mb-6 group-hover:bg-amber-500 group-hover:text-white transition-colors shadow-md">
+            <span class="material-symbols-outlined text-3xl">spa</span>
+          </div>
+          <h3 class="text-xl font-bold text-stone-900 dark:text-white mb-3">Caramel &amp; Citrus Harmony</h3>
+          <p class="text-stone-700 dark:text-stone-300 text-sm leading-relaxed mb-6 font-medium">
+            Proprietary botanical notes intertwined with Madagascar vanilla hints, warm cinnamon spice, and bright zesty citrus oils.
+          </p>
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold text-stone-600 dark:text-stone-400">
+              <span>Botanical Complexity</span>
+              <span class="text-amber-600 dark:text-amber-400 font-bold">Master Blend</span>
+            </div>
+            <div class="w-full h-2 bg-stone-300/60 dark:bg-stone-700 rounded-full overflow-hidden">
+              <div class="h-full bg-amber-500 rounded-full w-11/12"></div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card group p-8 rounded-3xl hover:border-sky-500/50 transition-all hover:-translate-y-1.5 hover:shadow-2xl">
+          <div class="w-14 h-14 rounded-2xl bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center mb-6 group-hover:bg-sky-500 group-hover:text-white transition-colors shadow-md">
+            <span class="material-symbols-outlined text-3xl">ac_unit</span>
+          </div>
+          <h3 class="text-xl font-bold text-stone-900 dark:text-white mb-3">Ice-Cold Clean Snap</h3>
+          <p class="text-stone-700 dark:text-stone-300 text-sm leading-relaxed mb-6 font-medium">
+            The signature crisp finish that instantly cuts through thirst, resetting the palate and amplifying the pleasure of hearty food.
+          </p>
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-semibold text-stone-600 dark:text-stone-400">
+              <span>Crispness Meter</span>
+              <span class="text-sky-600 dark:text-sky-400 font-bold">Peak Snap</span>
+            </div>
+            <div class="w-full h-2 bg-stone-300/60 dark:bg-stone-700 rounded-full overflow-hidden">
+              <div class="h-full bg-sky-500 rounded-full w-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card p-8 sm:p-10 rounded-3xl">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div class="max-w-md">
+            <h4 class="text-2xl font-bold text-stone-900 dark:text-white mb-2">Tasting Profile Matrix</h4>
+            <p class="text-sm text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
+              Formulated with surgical balance: no cloying aftertaste, high carbonic sting, and a persistent aromatic trail.
+            </p>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 w-full lg:w-auto">
+            <div class="text-center p-4 rounded-2xl bg-white/85 dark:bg-stone-900/85 shadow-md border border-white/70 dark:border-stone-700/60 backdrop-blur-md">
+              <span class="text-2xl font-black text-primary">10/10</span>
+              <p class="text-xs uppercase font-bold text-stone-600 dark:text-stone-400 mt-1">Crispness</p>
+            </div>
+            <div class="text-center p-4 rounded-2xl bg-white/85 dark:bg-stone-900/85 shadow-md border border-white/70 dark:border-stone-700/60 backdrop-blur-md">
+              <span class="text-2xl font-black text-amber-600">10/10</span>
+              <p class="text-xs uppercase font-bold text-stone-600 dark:text-stone-400 mt-1">Effervescence</p>
+            </div>
+            <div class="text-center p-4 rounded-2xl bg-white/85 dark:bg-stone-900/85 shadow-md border border-white/70 dark:border-stone-700/60 backdrop-blur-md">
+              <span class="text-2xl font-black text-emerald-600">Balanced</span>
+              <p class="text-xs uppercase font-bold text-stone-600 dark:text-stone-400 mt-1">Sweetness</p>
+            </div>
+            <div class="text-center p-4 rounded-2xl bg-white/85 dark:bg-stone-900/85 shadow-md border border-white/70 dark:border-stone-700/60 backdrop-blur-md">
+              <span class="text-2xl font-black text-sky-600">Peak</span>
+              <p class="text-xs uppercase font-bold text-stone-600 dark:text-stone-400 mt-1">Refreshment</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Cold Serve Ritual (Frosted Translucent) -->
+  <section class="py-20 lg:py-28 relative overflow-hidden" id="ritual">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center max-w-2xl mx-auto mb-16 space-y-3">
+        <span class="text-xs font-extrabold uppercase tracking-widest text-coke-warmYellow px-3.5 py-1 rounded-full bg-stone-950/80 border border-amber-500/40 shadow-md">
+          The Art of Hospitality
+        </span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-stone-900 dark:text-white drop-shadow-sm">The Perfect Serve Ritual</h2>
+        <p class="text-stone-700 dark:text-stone-300 text-sm sm:text-base font-medium">
+          Three ceremonial steps to unlocking optimal carbonation and flavor notes in every glass.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass-card p-8 rounded-3xl transition-all flex flex-col justify-between hover:shadow-2xl">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-xl mb-6 shadow-lg shadow-primary/35">
+              01
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-stone-900 dark:text-white">Chill to 3°C (37°F)</h3>
+            <p class="text-stone-700 dark:text-stone-300 text-sm leading-relaxed mb-6 font-medium">
+              Frost the iconic contour glass bottle until fine dew condenses on the ridges. Precise chilling traps the dissolved CO2 for the sharpest bite.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-stone-300/60 dark:border-stone-700/60 flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-coke-warmYellow">
+            <span class="material-symbols-outlined text-base">thermostat</span>
+            <span>Optimal Temperature: 3°C / 37°F</span>
+          </div>
+        </div>
+        <div class="glass-card p-8 rounded-3xl transition-all flex flex-col justify-between hover:shadow-2xl">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-stone-800 text-white flex items-center justify-center font-black text-xl mb-6 shadow-md">
+              02
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-stone-900 dark:text-white">The 45° Angle Pour</h3>
+            <p class="text-stone-700 dark:text-stone-300 text-sm leading-relaxed mb-6 font-medium">
+              Tilt a heavy crystal tumbler filled with dense clear ice cubes. Gently glide the soda down the inside wall to preserve the silky carbonic crown.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-stone-300/60 dark:border-stone-700/60 flex items-center gap-2 text-xs font-bold text-stone-800 dark:text-stone-300">
+            <span class="material-symbols-outlined text-base">rotate_right</span>
+            <span>Optional garnish: Fresh lime wheel</span>
+          </div>
+        </div>
+        <div class="glass-card p-8 rounded-3xl transition-all flex flex-col justify-between hover:shadow-2xl">
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-stone-800 text-white flex items-center justify-center font-black text-xl mb-6 shadow-md">
+              03
+            </div>
+            <h3 class="text-xl font-bold mb-3 text-stone-900 dark:text-white">Savor the First Fizz</h3>
+            <p class="text-stone-700 dark:text-stone-300 text-sm leading-relaxed mb-6 font-medium">
+              Listen to the acoustic crackle of micro-bubbles bursting on the surface, take your first deep breath of citrus-caramel aroma, and drink.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-stone-300/60 dark:border-stone-700/60 flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+            <span class="material-symbols-outlined text-base">hearing</span>
+            <span>Pure Acoustic Refreshment</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Heritage -->
+  <section class="py-20 lg:py-24 border-y border-stone-300/50 dark:border-stone-800/50 transition-colors" id="heritage">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-stone-300/60 dark:divide-stone-800">
+        <div class="pt-6 md:pt-0 md:px-6 space-y-3">
+          <div class="text-5xl sm:text-6xl font-extrabold text-primary tracking-tight">138+</div>
+          <h3 class="text-lg font-bold text-stone-900 dark:text-white">Years of Unchanged Heritage</h3>
+          <p class="text-sm text-stone-700 dark:text-stone-300 max-w-xs mx-auto font-medium">
+            From Dr. John Pemberton’s Atlanta pharmacy in 1886 to the contemporary world stage.
+          </p>
+        </div>
+        <div class="pt-6 md:pt-0 md:px-6 space-y-3">
+          <div class="text-5xl sm:text-6xl font-extrabold text-amber-600 dark:text-amber-500 tracking-tight">200+</div>
+          <h3 class="text-lg font-bold text-stone-900 dark:text-white">Countries &amp; Territories</h3>
+          <p class="text-sm text-stone-700 dark:text-stone-300 max-w-xs mx-auto font-medium">
+            A universal greeting of refreshment shared in virtually every language and culture.
+          </p>
+        </div>
+        <div class="pt-6 md:pt-0 md:px-6 space-y-3">
+          <div class="text-5xl sm:text-6xl font-extrabold text-emerald-600 dark:text-emerald-500 tracking-tight">100%</div>
+          <h3 class="text-lg font-bold text-stone-900 dark:text-white">Recyclable Glass Initiative</h3>
+          <p class="text-sm text-stone-700 dark:text-stone-300 max-w-xs mx-auto font-medium">
+            Circular glass packaging designed to be cleaned, refilled, and continuously reborn.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: The Family -->
+  <section class="py-20 lg:py-28 transition-colors" id="family">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+        <div class="max-w-2xl space-y-3">
+          <span class="text-xs font-bold uppercase tracking-widest text-primary px-3 py-1 rounded-full bg-white/80 dark:bg-red-950/50 shadow-sm border border-white/60">The Collection</span>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-stone-900 dark:text-white drop-shadow-sm">Explore The Classic Lineup</h2>
+          <p class="text-stone-700 dark:text-stone-300 text-sm sm:text-base font-medium">
+            Crafted for every mood, moment, and craving without compromising on the iconic fizz.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">Filtered by:</span>
+          <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-white/80 dark:bg-stone-800 text-stone-800 dark:text-stone-200 shadow-sm border border-white/60">Glass Contours &amp; Cans</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card p-6 rounded-3xl flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1.5 transition-all">
+          <div>
+            <div class="h-44 rounded-2xl bg-amber-100/70 dark:bg-stone-700/50 flex items-center justify-center p-4 relative overflow-hidden mb-5">
+              <span class="absolute top-3 right-3 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-primary text-white uppercase">The Original</span>
+              <span class="material-symbols-outlined text-6xl text-amber-800 dark:text-amber-400">liquor</span>
+            </div>
+            <span class="text-[11px] font-bold text-primary uppercase tracking-wider">Heritage Glass</span>
+            <h3 class="text-lg font-bold text-stone-900 dark:text-white mt-1">Coca-Cola Original Taste</h3>
+            <p class="text-xs text-stone-600 dark:text-stone-400 mt-2 leading-relaxed font-medium">
+              The signature formulation in the iconic Georgia-green glass contour bottle.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-stone-200/70 dark:border-stone-700/60 flex items-center justify-between">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-stone-500">Calories</p>
+              <p class="text-sm font-black text-stone-900 dark:text-stone-100">140 kcal</p>
+            </div>
+            <button class="px-4 py-2 rounded-full bg-white/80 dark:bg-stone-700 hover:bg-primary hover:text-white text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors shadow-sm">
+              Quick View
+            </button>
+          </div>
+        </div>
+        <div class="glass-card p-6 rounded-3xl flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1.5 transition-all">
+          <div>
+            <div class="h-44 rounded-2xl bg-stone-900 flex items-center justify-center p-4 relative overflow-hidden mb-5 shadow-inner">
+              <span class="absolute top-3 right-3 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-stone-700 text-white uppercase">0 Sugar</span>
+              <span class="material-symbols-outlined text-6xl text-stone-400">sports_bar</span>
+            </div>
+            <span class="text-[11px] font-bold text-stone-600 dark:text-stone-400 uppercase tracking-wider">Zero Calorie</span>
+            <h3 class="text-lg font-bold text-stone-900 dark:text-white mt-1">Coca-Cola Zero Sugar</h3>
+            <p class="text-xs text-stone-600 dark:text-stone-400 mt-2 leading-relaxed font-medium">
+              Real Coca-Cola taste with zero sugar, zero calories, and genuine bold crispness.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-stone-200/70 dark:border-stone-700/60 flex items-center justify-between">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-stone-500">Calories</p>
+              <p class="text-sm font-black text-stone-900 dark:text-stone-100">0 kcal</p>
+            </div>
+            <button class="px-4 py-2 rounded-full bg-white/80 dark:bg-stone-700 hover:bg-primary hover:text-white text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors shadow-sm">
+              Quick View
+            </button>
+          </div>
+        </div>
+        <div class="glass-card p-6 rounded-3xl flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1.5 transition-all">
+          <div>
+            <div class="h-44 rounded-2xl bg-rose-100/80 dark:bg-stone-700/50 flex items-center justify-center p-4 relative overflow-hidden mb-5">
+              <span class="absolute top-3 right-3 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-600 text-white uppercase">Fruit Infused</span>
+              <span class="material-symbols-outlined text-6xl text-rose-600 dark:text-rose-400">local_bar</span>
+            </div>
+            <span class="text-[11px] font-bold text-rose-600 uppercase tracking-wider">Flavored Twist</span>
+            <h3 class="text-lg font-bold text-stone-900 dark:text-white mt-1">Coca-Cola Cherry</h3>
+            <p class="text-xs text-stone-600 dark:text-stone-400 mt-2 leading-relaxed font-medium">
+              Infused with natural cherry essence for an aromatic sweet punch of summer fruit.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-stone-200/70 dark:border-stone-700/60 flex items-center justify-between">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-stone-500">Calories</p>
+              <p class="text-sm font-black text-stone-900 dark:text-stone-100">150 kcal</p>
+            </div>
+            <button class="px-4 py-2 rounded-full bg-white/80 dark:bg-stone-700 hover:bg-primary hover:text-white text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors shadow-sm">
+              Quick View
+            </button>
+          </div>
+        </div>
+        <div class="glass-card p-6 rounded-3xl flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1.5 transition-all">
+          <div>
+            <div class="h-44 rounded-2xl bg-orange-100/80 dark:bg-stone-700/50 flex items-center justify-center p-4 relative overflow-hidden mb-5">
+              <span class="absolute top-3 right-3 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-amber-600 text-white uppercase">Velvet Note</span>
+              <span class="material-symbols-outlined text-6xl text-amber-600 dark:text-amber-400">wine_bar</span>
+            </div>
+            <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Smooth Finish</span>
+            <h3 class="text-lg font-bold text-stone-900 dark:text-white mt-1">Coca-Cola Vanilla</h3>
+            <p class="text-xs text-stone-600 dark:text-stone-400 mt-2 leading-relaxed font-medium">
+              Creamy vanilla ribbons woven into our secret formula for an ultra-smooth finish.
+            </p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-stone-200/70 dark:border-stone-700/60 flex items-center justify-between">
+            <div>
+              <p class="text-[10px] uppercase font-bold text-stone-500">Calories</p>
+              <p class="text-sm font-black text-stone-900 dark:text-stone-100">150 kcal</p>
+            </div>
+            <button class="px-4 py-2 rounded-full bg-white/80 dark:bg-stone-700 hover:bg-primary hover:text-white text-stone-800 dark:text-stone-200 text-xs font-bold transition-colors shadow-sm">
+              Quick View
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Pairings -->
+  <section class="py-20 lg:py-28 transition-colors" id="pairings">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-16 space-y-3">
+        <span class="text-xs font-extrabold uppercase tracking-widest text-primary px-3 py-1 rounded-full bg-white/80 dark:bg-red-950/50 border border-white/60 shadow-sm">Gastronomy</span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-stone-900 dark:text-white drop-shadow-sm">The Ultimate Dining Companion</h2>
+        <p class="text-stone-700 dark:text-stone-300 text-sm sm:text-base font-medium">
+          High acidity and effervescence cut through rich fats, elevating flavor profiles to pure culinary bliss.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass-card rounded-3xl overflow-hidden shadow-md group hover:shadow-2xl transition-all">
+          <div class="h-48 bg-stone-200/70 dark:bg-stone-700/70 relative overflow-hidden flex items-center justify-center">
+            <span class="material-symbols-outlined text-7xl text-amber-600/80 group-hover:scale-110 transition-transform duration-300">lunch_dining</span>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <span class="absolute bottom-3 left-4 text-white text-xs font-extrabold tracking-wider uppercase">Crisp &amp; Savory</span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Gourmet Smashburgers</h3>
+            <p class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
+              Charred crust, melted sharp cheddar, and rich beef tallow need the carbonic snap to slice through savory heaviness.
+            </p>
+            <div class="mt-4 pt-4 border-t border-stone-200/70 dark:border-stone-700 text-xs font-bold text-primary flex items-center gap-1">
+              <span>Best Match:</span>
+              <span class="text-stone-900 dark:text-stone-100">Coca-Cola Classic Glass 8oz</span>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card rounded-3xl overflow-hidden shadow-md group hover:shadow-2xl transition-all">
+          <div class="h-48 bg-stone-200/70 dark:bg-stone-700/70 relative overflow-hidden flex items-center justify-center">
+            <span class="material-symbols-outlined text-7xl text-red-600/80 group-hover:scale-110 transition-transform duration-300">local_pizza</span>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <span class="absolute bottom-3 left-4 text-white text-xs font-extrabold tracking-wider uppercase">Acidic &amp; Cheesy</span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Wood-Fired Pizza</h3>
+            <p class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
+              Tangy San Marzano tomato sauce and charred sourdough crust find harmony with the caramel and herbal cola notes.
+            </p>
+            <div class="mt-4 pt-4 border-t border-stone-200/70 dark:border-stone-700 text-xs font-bold text-primary flex items-center gap-1">
+              <span>Best Match:</span>
+              <span class="text-stone-900 dark:text-stone-100">Coca-Cola Zero Sugar</span>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card rounded-3xl overflow-hidden shadow-md group hover:shadow-2xl transition-all">
+          <div class="h-48 bg-stone-200/70 dark:bg-stone-700/70 relative overflow-hidden flex items-center justify-center">
+            <span class="material-symbols-outlined text-7xl text-orange-600/80 group-hover:scale-110 transition-transform duration-300">outdoor_grill</span>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <span class="absolute bottom-3 left-4 text-white text-xs font-extrabold tracking-wider uppercase">Smoky &amp; Sweet</span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-stone-900 dark:text-white mb-2">Summer Barbecue</h3>
+            <p class="text-xs text-stone-700 dark:text-stone-300 leading-relaxed font-medium">
+              Hickory woodsmoke and brown sugar glazes mirror the molasses and vanilla accents hidden within the original recipe.
+            </p>
+            <div class="mt-4 pt-4 border-t border-stone-200/70 dark:border-stone-700 text-xs font-bold text-primary flex items-center gap-1">
+              <span>Best Match:</span>
+              <span class="text-stone-900 dark:text-stone-100">Coca-Cola Cherry</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Store Locator -->
+  <section class="py-20 lg:py-28 transition-colors" id="store-locator">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-primary/85 via-coke-darkRed/85 to-stone-950/90 text-white p-8 sm:p-12 lg:p-16 shadow-2xl backdrop-blur-xl border border-white/20">
+        <div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-amber-400/20 blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-16 -bottom-16 w-80 h-80 rounded-full bg-black/40 blur-2xl pointer-events-none"></div>
+        <div class="relative z-10 max-w-3xl space-y-6">
+          <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 border border-white/30 text-xs font-bold uppercase tracking-widest text-amber-200 backdrop-blur-md">
+            <span class="material-symbols-outlined text-sm">storefront</span>
+            Real-Time Availability
+          </span>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+            Ready for an Ice-Cold Classic?
+          </h2>
+          <p class="text-stone-200 text-base sm:text-lg max-w-xl font-normal leading-relaxed">
+            Locate glass contour bottles, chilled multi-packs, and fountain dispensers near your current postal code in seconds.
+          </p>
+          <div class="pt-2 max-w-xl">
+            <form class="flex flex-col sm:flex-row gap-3 bg-white/15 p-2 rounded-2xl sm:rounded-full backdrop-blur-md border border-white/25" onsubmit="event.preventDefault();">
+              <div class="flex items-center gap-3 px-4 flex-1">
+                <span class="material-symbols-outlined text-stone-200">pin_drop</span>
+                <input class="w-full bg-transparent border-none text-white placeholder-stone-200 text-sm focus:ring-0 focus:outline-none" placeholder="Enter postal or ZIP code..." type="text"/>
+              </div>
+              <button class="bg-white text-stone-950 hover:bg-stone-100 font-bold px-7 py-3 rounded-full text-sm transition-all shadow-md hover:scale-105 flex items-center justify-center gap-2" type="submit">
+                <span>Find Stockists</span>
+                <span class="material-symbols-outlined text-base">arrow_forward</span>
+              </button>
+            </form>
+          </div>
+          <div class="pt-6 border-t border-white/20 flex flex-wrap items-center gap-6 sm:gap-10 text-stone-200 text-xs font-semibold">
+            <span>Also available at:</span>
+            <span class="hover:text-white cursor-pointer transition-colors">Target</span>
+            <span class="hover:text-white cursor-pointer transition-colors">Walmart</span>
+            <span class="hover:text-white cursor-pointer transition-colors">Whole Foods Market</span>
+            <span class="hover:text-white cursor-pointer transition-colors">Kroger</span>
+            <span class="hover:text-white cursor-pointer transition-colors">Local Delis &amp; Bodegas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-white/80 dark:bg-stone-950/80 border-t border-stone-200/60 dark:border-stone-800 text-stone-700 dark:text-stone-400 text-sm transition-colors backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+            <span class="material-symbols-outlined text-lg">water_drop</span>
+          </div>
+          <span class="font-display text-xl font-bold text-stone-900 dark:text-white">Coca-Cola</span>
+          <span class="text-xs text-stone-500">| © 2025 The Coca-Cola Company. All rights reserved.</span>
+        </div>
+        <div class="flex flex-wrap gap-6 text-xs font-semibold">
+          <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+          <a class="hover:text-primary transition-colors" href="#">Terms of Use</a>
+          <a class="hover:text-primary transition-colors" href="#">Nutritional Information</a>
+          <a class="hover:text-primary transition-colors" href="#">Sustainability Report</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
