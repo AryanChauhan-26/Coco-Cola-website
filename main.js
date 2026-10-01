@@ -10,6 +10,8 @@ const FRAME_PATH_EXT = '.jpg';
 const frames = [];
 let loadedCount = 0;
 let currentFrameIndex = 0;
+let nextFrameToLoad = 1;
+let scrollRenderScheduled = false;
 
 // Sound Synthesizer State
 let audioCtx = null;
@@ -29,6 +31,9 @@ const ctx = canvas.getContext('2d');
 const frameCounter = document.getElementById('frame-counter');
 const soundBtn = document.getElementById('sound-btn');
 const soundIcon = document.getElementById('sound-icon');
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileNav = document.getElementById('mobile-nav');
+const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
 // ==========================================================================
 // LENIS SMOOTH SCROLL INITIALIZATION
@@ -38,6 +43,7 @@ const lenis = new Lenis({
   easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
   smoothWheel: true,
   touchMultiplier: 1.5,
+  anchors: true,
 });
 
 function raf(time) {
@@ -46,8 +52,28 @@ function raf(time) {
 }
 requestAnimationFrame(raf);
 
+function setMobileMenuOpen(isOpen) {
+  if (!mobileMenuBtn || !mobileNav) return;
+  mobileNav.classList.toggle('hidden', !isOpen);
+  mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
+  mobileMenuBtn.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+  if (mobileMenuIcon) mobileMenuIcon.textContent = isOpen ? 'close' : 'menu';
+}
+
+if (mobileMenuBtn && mobileNav) {
+  mobileMenuBtn.addEventListener('click', () => {
+    setMobileMenuOpen(mobileMenuBtn.getAttribute('aria-expanded') !== 'true');
+  });
+  mobileNav.addEventListener('click', (event) => {
+    if (event.target.closest('a')) setMobileMenuOpen(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setMobileMenuOpen(false);
+  });
+}
+
 // ==========================================================================
-// PRELOADING 240 FRAMES
+// PRIORITIZED FRAME LOADING
 // ==========================================================================
 function getFrameUrl(index) {
   const paddedIndex = String(index + 1).padStart(3, '0');
@@ -55,35 +81,46 @@ function getFrameUrl(index) {
 }
 
 function preloadFrames() {
-  for (let i = 0; i < TOTAL_FRAMES; i++) {
-    const img = new Image();
-    img.src = getFrameUrl(i);
+  frames.length = TOTAL_FRAMES;
+  loadFrame(0);
+}
 
-    img.onload = () => {
-      loadedCount++;
-      const percent = Math.round((loadedCount / TOTAL_FRAMES) * 100);
-      if (progressBar) progressBar.style.width = `${percent}%`;
-      if (progressPercent) progressPercent.textContent = `${percent}%`;
-      if (progressFrames) progressFrames.textContent = `${loadedCount} / ${TOTAL_FRAMES}`;
+function loadFrame(index) {
+  const img = new Image();
+  frames[index] = img;
 
-      if (loadedCount === TOTAL_FRAMES) {
-        onAllFramesLoaded();
-      }
-    };
+  const onSettled = () => {
+    loadedCount++;
+    const percent = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+    if (progressBar) progressBar.style.width = `${percent}%`;
+    if (progressPercent) progressPercent.textContent = `${percent}%`;
+    if (progressFrames) progressFrames.textContent = `${loadedCount} / ${TOTAL_FRAMES}`;
 
-    img.onerror = () => {
-      console.warn(`Frame failed to load: ${img.src}`);
-      loadedCount++;
-      if (loadedCount === TOTAL_FRAMES) {
-        onAllFramesLoaded();
-      }
-    };
+    if (index === 0) {
+      onFirstFrameReady();
+      renderFrame(currentFrameIndex);
+      loadNextFrames(8);
+    } else {
+      renderFrame(currentFrameIndex);
+      loadNextFrames(1);
+    }
+  };
 
-    frames.push(img);
+  img.onload = onSettled;
+  img.onerror = () => {
+    console.warn(`Frame failed to load: ${img.src}`);
+    onSettled();
+  };
+  img.src = getFrameUrl(index);
+}
+
+function loadNextFrames(count) {
+  for (let i = 0; i < count && nextFrameToLoad < TOTAL_FRAMES; i++) {
+    loadFrame(nextFrameToLoad++);
   }
 }
 
-function onAllFramesLoaded() {
+function onFirstFrameReady() {
   setTimeout(() => {
     if (preloader) preloader.classList.add('fade-out');
     resizeCanvas();
@@ -96,7 +133,7 @@ function onAllFramesLoaded() {
 // ==========================================================================
 function resizeCanvas() {
   if (!canvas) return;
-  const dpr = window.devicePixelRatio || 1;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const width = window.innerWidth;
   const height = window.innerHeight;
 
@@ -113,10 +150,24 @@ window.addEventListener('resize', resizeCanvas);
 
 function renderFrame(index) {
   if (!canvas || !ctx) return;
-  const img = frames[index];
-  if (!img || !img.complete) return;
+  let img = frames[index];
+  if (!img || !img.complete || !img.naturalWidth) {
+    for (let distance = 1; distance < TOTAL_FRAMES; distance++) {
+      const earlier = frames[index - distance];
+      const later = frames[index + distance];
+      if (earlier?.complete && earlier.naturalWidth) {
+        img = earlier;
+        break;
+      }
+      if (later?.complete && later.naturalWidth) {
+        img = later;
+        break;
+      }
+    }
+  }
+  if (!img || !img.complete || !img.naturalWidth) return;
 
-  const dpr = window.devicePixelRatio || 1;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const cWidth = canvas.width / dpr;
   const cHeight = canvas.height / dpr;
 
@@ -161,7 +212,13 @@ function onScroll() {
 
   if (frameIndex !== currentFrameIndex) {
     currentFrameIndex = frameIndex;
-    renderFrame(currentFrameIndex);
+    if (!scrollRenderScheduled) {
+      scrollRenderScheduled = true;
+      requestAnimationFrame(() => {
+        scrollRenderScheduled = false;
+        renderFrame(currentFrameIndex);
+      });
+    }
   }
 }
 
