@@ -26,6 +26,28 @@ section {
   z-index: 10;
 }
 
+section[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+@media (max-width: 360px) {
+  header .brand-name {
+    font-size: 1.125rem;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
+  .header-actions {
+    gap: 0.35rem;
+  }
+
+  .header-actions button {
+    padding: 0.4rem;
+  }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
